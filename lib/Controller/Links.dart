@@ -1,3 +1,5 @@
-final Linkedinurl = "https://www.linkedin.com/in/sreerag-sreedhar-742296229/";
-final Githuburl ="https://github.com/iamsreeragsreedhar?tab=overview&from=2025-03-01&to=2025-03-10";
-String email = 'iamsreeragsreedhar@gmail.com';
+const String linkedInUrl =
+    "https://www.linkedin.com/in/sreerag-sreedhar-742296229/";
+const String githubUrl = "https://github.com/iamsreeragsreedhar";
+const String emailAddress = 'iamsreeragsreedhar@gmail.com';
+const String resumeAsset = 'assets/SREERAGCV.pdf';
