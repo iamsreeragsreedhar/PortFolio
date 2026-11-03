@@ -6,11 +6,14 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:portfoloio_1/core/constants.dart';
 import 'package:portfoloio_1/core/theme.dart';
 import 'package:portfoloio_1/View/widgets/section_header.dart';
+
 class ProjectsSection extends StatefulWidget {
   const ProjectsSection({super.key});
+
   @override
   State<ProjectsSection> createState() => _ProjectsSectionState();
 }
+
 class _ProjectsSectionState extends State<ProjectsSection> {
   String _selectedCategory = 'All';
   final List<String> _categories = [
@@ -20,6 +23,7 @@ class _ProjectsSectionState extends State<ProjectsSection> {
     'Fintech & Utilities',
     'Fintech & Real Estate',
   ];
+
   @override
   Widget build(BuildContext context) {
     final w = MediaQuery.of(context).size.width;
@@ -29,6 +33,7 @@ class _ProjectsSectionState extends State<ProjectsSection> {
         : AppData.projects
             .where((p) => p['category'] == _selectedCategory)
             .toList();
+
     return Container(
       width: double.infinity,
       color: AppColors.surface,
@@ -61,9 +66,7 @@ class _ProjectsSectionState extends State<ProjectsSection> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 18, vertical: 8),
                       decoration: BoxDecoration(
-                        color: isSelected
-                            ? AppColors.accent
-                            : AppColors.card,
+                        color: isSelected ? AppColors.accent : AppColors.card,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
                           color: isSelected
@@ -118,11 +121,13 @@ class _ProjectsSectionState extends State<ProjectsSection> {
     );
   }
 }
+
 class _ProjectCard extends StatefulWidget {
   final Map<String, dynamic> data;
   final int delay;
   final bool isMobile;
   final double maxWidth;
+
   const _ProjectCard({
     super.key,
     required this.data,
@@ -130,12 +135,28 @@ class _ProjectCard extends StatefulWidget {
     required this.isMobile,
     required this.maxWidth,
   });
+
   @override
   State<_ProjectCard> createState() => _ProjectCardState();
 }
+
 class _ProjectCardState extends State<_ProjectCard> {
   bool _hovered = false;
   int _currentImage = 0;
+  late final PageController _pageController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
   Future<void> _openUrl(String url) async {
     if (url.isEmpty) return;
     final uri = Uri.parse(url);
@@ -145,10 +166,41 @@ class _ProjectCardState extends State<_ProjectCard> {
       }
     } catch (_) {}
   }
+
+  void _showScreensLightbox(BuildContext context, int initialIndex) {
+    final images = (widget.data['images'] as List<dynamic>?)?.cast<String>() ?? <String>[];
+    if (images.isEmpty) return;
+
+    final screenOptions = (widget.data['screenOptions'] as List<dynamic>?)
+        ?.cast<Map<String, dynamic>>();
+    final featureOptions = (widget.data['featureOptions'] as List<dynamic>?)
+        ?.cast<String>();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => _ProjectScreensLightboxDialog(
+        title: widget.data['title'] as String,
+        images: images,
+        screenOptions: screenOptions,
+        featureOptions: featureOptions,
+        initialIndex: initialIndex,
+        accentColor: Color(widget.data['accentColor'] as int? ?? 0xFF00FFD1),
+      ),
+    );
+  }
+
   void _showProjectDetails(BuildContext context) {
-    final tags = widget.data['tags'] as List<String>;
+    final tags = (widget.data['tags'] as List<dynamic>?)?.cast<String>() ?? <String>[];
     final highlights =
-        widget.data['highlights'] as List<String>? ?? <String>[];
+        (widget.data['highlights'] as List<dynamic>?)?.cast<String>() ?? <String>[];
+    final images = (widget.data['images'] as List<dynamic>?)?.cast<String>() ?? <String>[];
+    final screenOptions = (widget.data['screenOptions'] as List<dynamic>?)
+        ?.cast<Map<String, dynamic>>();
+    final featureOptions = (widget.data['featureOptions'] as List<dynamic>?)
+        ?.cast<String>();
+    final accentInt = widget.data['accentColor'] as int? ?? 0xFF00FFD1;
+    final accentColor = Color(accentInt);
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -176,24 +228,23 @@ class _ProjectCardState extends State<_ProjectCard> {
           ],
         ),
         content: SizedBox(
-          width: 500,
+          width: 580,
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
+                // Top Badge
                 if (widget.data['badge'] != null)
                   Container(
-                    margin: const EdgeInsets.only(bottom: 16),
+                    margin: const EdgeInsets.only(bottom: 12),
                     padding:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Color(widget.data['accentColor'] as int? ?? 0xFF00FFD1)
-                          .withValues(alpha: 0.15),
+                      color: accentColor.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(6),
                       border: Border.all(
-                        color: Color(widget.data['accentColor'] as int? ?? 0xFF00FFD1)
-                            .withValues(alpha: 0.4),
+                        color: accentColor.withValues(alpha: 0.4),
                       ),
                     ),
                     child: Text(
@@ -201,10 +252,161 @@ class _ProjectCardState extends State<_ProjectCard> {
                       style: GoogleFonts.inter(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: Color(widget.data['accentColor'] as int? ?? 0xFF00FFD1),
+                        color: accentColor,
                       ),
                     ),
                   ),
+
+                // Feature Options from image header
+                if (featureOptions != null && featureOptions.isNotEmpty) ...[
+                  Text(
+                    'Included System Capabilities',
+                    style: GoogleFonts.spaceGrotesk(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: accentColor,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: featureOptions.map((opt) {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: accentColor.withValues(alpha: 0.35),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.check_rounded,
+                                size: 13, color: accentColor),
+                            const SizedBox(width: 5),
+                            Text(
+                              opt,
+                              style: GoogleFonts.inter(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+
+                // Image Preview Card & Lightbox Launcher
+                if (images.isNotEmpty) ...[
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Stack(
+                      children: [
+                        AspectRatio(
+                          aspectRatio: 16 / 9,
+                          child: Image.asset(
+                            images[_currentImage.clamp(0, images.length - 1)],
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        Positioned(
+                          right: 10,
+                          bottom: 10,
+                          child: ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.surface.withValues(alpha: 0.9),
+                              foregroundColor: accentColor,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 8),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                side: BorderSide(
+                                    color: accentColor.withValues(alpha: 0.5)),
+                              ),
+                            ),
+                            icon: const Icon(Icons.fullscreen, size: 18),
+                            label: Text(
+                              'View All 9 Screens',
+                              style: GoogleFonts.spaceGrotesk(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            onPressed: () {
+                              Navigator.pop(ctx);
+                              _showScreensLightbox(context, _currentImage);
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+
+                // Screen Options Tabs
+                if (screenOptions != null && screenOptions.isNotEmpty) ...[
+                  Text(
+                    'Production Screen Breakdown (9 Screens)',
+                    style: GoogleFonts.spaceGrotesk(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: screenOptions.asMap().entries.map((entry) {
+                      final isSelected = _currentImage == entry.key;
+                      return InkWell(
+                        onTap: () {
+                          Navigator.pop(ctx);
+                          _showScreensLightbox(context, entry.key);
+                        },
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? accentColor.withValues(alpha: 0.2)
+                                : AppColors.surface,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: isSelected
+                                  ? accentColor
+                                  : AppColors.border,
+                            ),
+                          ),
+                          child: Text(
+                            entry.value['name'] as String,
+                            style: GoogleFonts.inter(
+                              fontSize: 11,
+                              fontWeight: isSelected
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                              color: isSelected
+                                  ? accentColor
+                                  : AppColors.textSecondary,
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+
                 Text(
                   widget.data['description'] as String,
                   style: GoogleFonts.inter(
@@ -220,7 +422,7 @@ class _ProjectCardState extends State<_ProjectCard> {
                     style: GoogleFonts.spaceGrotesk(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.accent,
+                      color: accentColor,
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -229,10 +431,10 @@ class _ProjectCardState extends State<_ProjectCard> {
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.check_circle_rounded,
                               size: 16,
-                              color: AppColors.accent,
+                              color: accentColor,
                             ),
                             const SizedBox(width: 8),
                             Expanded(
@@ -285,6 +487,25 @@ class _ProjectCardState extends State<_ProjectCard> {
           ),
         ),
         actions: [
+          if (images.isNotEmpty)
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: accentColor,
+                foregroundColor: AppColors.bg,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              icon: const Icon(Icons.photo_library_rounded, size: 15),
+              label: Text(
+                'View All 9 Screens',
+                style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+              ),
+              onPressed: () {
+                Navigator.pop(ctx);
+                _showScreensLightbox(context, _currentImage);
+              },
+            ),
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: Text(
@@ -295,15 +516,16 @@ class _ProjectCardState extends State<_ProjectCard> {
           if ((widget.data['github'] as String? ?? '').isNotEmpty)
             ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.accent,
-                foregroundColor: AppColors.bg,
+                backgroundColor: AppColors.cardHover,
+                foregroundColor: AppColors.textPrimary,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
+                  side: const BorderSide(color: AppColors.border),
                 ),
               ),
               icon: const FaIcon(FontAwesomeIcons.github, size: 14),
               label: Text(
-                'Open GitHub',
+                'GitHub',
                 style: GoogleFonts.inter(fontWeight: FontWeight.w600),
               ),
               onPressed: () {
@@ -315,34 +537,133 @@ class _ProjectCardState extends State<_ProjectCard> {
       ),
     );
   }
-  Widget _buildCardHeader(List<String> images) {
-    final accentInt = widget.data['accentColor'] as int? ?? 0xFF00FFD1;
-    final accentColor = Color(accentInt);
+
+  Widget _buildCardHeader(
+      List<String> images, Color accentColor, List<Map<String, dynamic>>? screenOptions) {
     final isResumo = (widget.data['title'] as String).contains('Resumo');
     final isStockFlow = (widget.data['title'] as String).contains('StockFlow');
     final isOutSplitIn = (widget.data['title'] as String).contains('OutSplitIn');
+
     if (images.isNotEmpty) {
+      final activeScreenTitle = screenOptions != null && _currentImage < screenOptions.length
+          ? screenOptions[_currentImage]['name'] as String
+          : 'Screen ${_currentImage + 1}';
+
       return Stack(
         children: [
-          SizedBox(
-            height: 220,
-            width: double.infinity,
-            child: PageView.builder(
-              itemCount: images.length,
-              onPageChanged: (i) => setState(() => _currentImage = i),
-              itemBuilder: (_, i) => Image.asset(
-                images[i],
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  color: AppColors.bg,
-                  child: const Icon(Icons.image, size: 60, color: AppColors.border),
+          GestureDetector(
+            onTap: () => _showScreensLightbox(context, _currentImage),
+            child: SizedBox(
+              height: 220,
+              width: double.infinity,
+              child: PageView.builder(
+                controller: _pageController,
+                itemCount: images.length,
+                onPageChanged: (i) => setState(() => _currentImage = i),
+                itemBuilder: (_, i) => Image.asset(
+                  images[i],
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(
+                    color: AppColors.bg,
+                    child: const Icon(Icons.image,
+                        size: 60, color: AppColors.border),
+                  ),
                 ),
               ),
             ),
           ),
+
+          // Top Left Screen Badge
+          Positioned(
+            top: 10,
+            left: 10,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppColors.surface.withValues(alpha: 0.85),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: accentColor.withValues(alpha: 0.5),
+                  width: 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    blurRadius: 10,
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: accentColor,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    activeScreenTitle,
+                    style: GoogleFonts.spaceGrotesk(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Top Right Fullscreen/Expand Button
+          Positioned(
+            top: 10,
+            right: 10,
+            child: InkWell(
+              onTap: () => _showScreensLightbox(context, _currentImage),
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.surface.withValues(alpha: 0.88),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: accentColor.withValues(alpha: 0.6),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: accentColor.withValues(alpha: 0.2),
+                      blurRadius: 10,
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.zoom_in_rounded, size: 14, color: accentColor),
+                    const SizedBox(width: 4),
+                    Text(
+                      screenOptions != null ? '9 Screens' : 'Expand',
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: accentColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // Bottom Slide Indicators
           if (images.length > 1)
             Positioned(
-              bottom: 10,
+              bottom: 8,
               left: 0,
               right: 0,
               child: Row(
@@ -351,13 +672,13 @@ class _ProjectCardState extends State<_ProjectCard> {
                   images.length,
                   (i) => AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
-                    margin: const EdgeInsets.symmetric(horizontal: 3),
-                    width: _currentImage == i ? 16 : 6,
-                    height: 6,
+                    margin: const EdgeInsets.symmetric(horizontal: 2.5),
+                    width: _currentImage == i ? 16 : 5,
+                    height: 5,
                     decoration: BoxDecoration(
                       color: _currentImage == i
-                          ? AppColors.accent
-                          : Colors.white.withValues(alpha: 0.4),
+                          ? accentColor
+                          : Colors.white.withValues(alpha: 0.35),
                       borderRadius: BorderRadius.circular(3),
                     ),
                   ),
@@ -367,7 +688,8 @@ class _ProjectCardState extends State<_ProjectCard> {
         ],
       );
     }
-    // Styled Hero Banner for Flagship Projects
+
+    // Styled Hero Banner for Flagship Projects without explicit screenshots
     return Container(
       height: 220,
       width: double.infinity,
@@ -453,7 +775,11 @@ class _ProjectCardState extends State<_ProjectCard> {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          isResumo ? 'ATS Matcher • PDF Engine • Web/Desktop' : (isStockFlow ? 'Offline-First • 26 Routes • SaaS' : 'BLoC • Firestore • fl_chart'),
+                          isResumo
+                              ? 'ATS Matcher • PDF Engine • Web/Desktop'
+                              : (isStockFlow
+                                  ? 'Offline-First • 26 Routes • SaaS'
+                                  : 'BLoC • Firestore • fl_chart'),
                           style: GoogleFonts.inter(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
@@ -479,12 +805,21 @@ class _ProjectCardState extends State<_ProjectCard> {
       ),
     );
   }
+
   @override
   Widget build(BuildContext context) {
     final images = (widget.data['images'] as List<dynamic>?)?.cast<String>() ?? <String>[];
     final tags = (widget.data['tags'] as List<dynamic>?)?.cast<String>() ?? <String>[];
-    final highlights = (widget.data['highlights'] as List<dynamic>?)?.cast<String>() ?? <String>[];
+    final highlights =
+        (widget.data['highlights'] as List<dynamic>?)?.cast<String>() ?? <String>[];
+    final screenOptions = (widget.data['screenOptions'] as List<dynamic>?)
+        ?.cast<Map<String, dynamic>>();
+    final featureOptions = (widget.data['featureOptions'] as List<dynamic>?)
+        ?.cast<String>();
     final github = widget.data['github'] as String? ?? '';
+    final accentInt = widget.data['accentColor'] as int? ?? 0xFF00FFD1;
+    final accentColor = Color(accentInt);
+
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
       onExit: (_) => setState(() => _hovered = false),
@@ -500,14 +835,14 @@ class _ProjectCardState extends State<_ProjectCard> {
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: _hovered
-                  ? AppColors.accent.withValues(alpha: 0.5)
+                  ? accentColor.withValues(alpha: 0.5)
                   : AppColors.border,
               width: 1.2,
             ),
             boxShadow: [
               BoxShadow(
                 color: _hovered
-                    ? AppColors.accent.withValues(alpha: 0.12)
+                    ? accentColor.withValues(alpha: 0.14)
                     : Colors.black.withValues(alpha: 0.3),
                 blurRadius: _hovered ? 35 : 18,
                 offset: const Offset(0, 10),
@@ -521,8 +856,71 @@ class _ProjectCardState extends State<_ProjectCard> {
               ClipRRect(
                 borderRadius:
                     const BorderRadius.vertical(top: Radius.circular(20)),
-                child: _buildCardHeader(images),
+                child: _buildCardHeader(images, accentColor, screenOptions),
               ),
+
+              // Interactive Screen Options Selector Row (from image)
+              if (screenOptions != null && screenOptions.isNotEmpty) ...[
+                Container(
+                  width: double.infinity,
+                  color: AppColors.bg.withValues(alpha: 0.4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    child: Row(
+                      children: screenOptions.asMap().entries.map((entry) {
+                        final isSelected = _currentImage == entry.key;
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 6),
+                          child: InkWell(
+                            onTap: () {
+                              setState(() => _currentImage = entry.key);
+                              _pageController.animateToPage(
+                                entry.key,
+                                duration: const Duration(milliseconds: 250),
+                                curve: Curves.easeInOut,
+                              );
+                            },
+                            borderRadius: BorderRadius.circular(12),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 180),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? accentColor.withValues(alpha: 0.25)
+                                    : AppColors.surface,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? accentColor
+                                      : AppColors.border,
+                                  width: 1,
+                                ),
+                              ),
+                              child: Text(
+                                entry.value['name'] as String,
+                                style: GoogleFonts.inter(
+                                  fontSize: 11,
+                                  fontWeight: isSelected
+                                      ? FontWeight.w700
+                                      : FontWeight.w500,
+                                  color: isSelected
+                                      ? accentColor
+                                      : AppColors.textSecondary,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+              ],
+
               Padding(
                 padding: const EdgeInsets.all(22),
                 child: Column(
@@ -536,6 +934,37 @@ class _ProjectCardState extends State<_ProjectCard> {
                         color: AppColors.textPrimary,
                       ),
                     ),
+
+                    // Feature Options Pills from Image Header
+                    if (featureOptions != null && featureOptions.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: featureOptions.map((opt) {
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: AppColors.surface,
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                color: accentColor.withValues(alpha: 0.25),
+                              ),
+                            ),
+                            child: Text(
+                              opt,
+                              style: GoogleFonts.inter(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w600,
+                                color: accentColor,
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ],
+
                     const SizedBox(height: 10),
                     Text(
                       widget.data['description'] as String,
@@ -547,6 +976,7 @@ class _ProjectCardState extends State<_ProjectCard> {
                         height: 1.6,
                       ),
                     ),
+
                     // Highlights preview
                     if (highlights.isNotEmpty) ...[
                       const SizedBox(height: 14),
@@ -554,10 +984,10 @@ class _ProjectCardState extends State<_ProjectCard> {
                             padding: const EdgeInsets.only(bottom: 4),
                             child: Row(
                               children: [
-                                const Icon(
+                                Icon(
                                   Icons.check_circle_outline_rounded,
                                   size: 14,
-                                  color: AppColors.accent,
+                                  color: accentColor,
                                 ),
                                 const SizedBox(width: 6),
                                 Expanded(
@@ -567,7 +997,8 @@ class _ProjectCardState extends State<_ProjectCard> {
                                     overflow: TextOverflow.ellipsis,
                                     style: GoogleFonts.inter(
                                       fontSize: 12,
-                                      color: AppColors.textPrimary.withValues(alpha: 0.85),
+                                      color: AppColors.textPrimary
+                                          .withValues(alpha: 0.85),
                                     ),
                                   ),
                                 ),
@@ -575,6 +1006,7 @@ class _ProjectCardState extends State<_ProjectCard> {
                             ),
                           )),
                     ],
+
                     const SizedBox(height: 16),
                     // Tags
                     Wrap(
@@ -589,7 +1021,8 @@ class _ProjectCardState extends State<_ProjectCard> {
                                   color: AppColors.surface,
                                   borderRadius: BorderRadius.circular(6),
                                   border: Border.all(
-                                      color: AppColors.borderLight.withValues(alpha: 0.6)),
+                                      color: AppColors.borderLight
+                                          .withValues(alpha: 0.6)),
                                 ),
                                 child: Text(t,
                                     style: GoogleFonts.inter(
@@ -600,40 +1033,76 @@ class _ProjectCardState extends State<_ProjectCard> {
                               ))
                           .toList(),
                     ),
+
                     const SizedBox(height: 22),
                     // Action buttons
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        OutlinedButton.icon(
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: AppColors.accent,
-                            side: BorderSide(
-                                color: AppColors.accent.withValues(alpha: 0.4)),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                        Row(
+                          children: [
+                            OutlinedButton.icon(
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: accentColor,
+                                side: BorderSide(
+                                    color: accentColor.withValues(alpha: 0.4)),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 13, vertical: 9),
+                              ),
+                              icon: const Icon(Icons.info_outline, size: 14),
+                              label: Text(
+                                'Specs',
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              onPressed: () => _showProjectDetails(context),
                             ),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 14, vertical: 9),
-                          ),
-                          icon: const Icon(Icons.info_outline, size: 15),
-                          label: Text(
-                            'Specs',
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          onPressed: () => _showProjectDetails(context),
+                            if (images.isNotEmpty) ...[
+                              const SizedBox(width: 8),
+                              ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      accentColor.withValues(alpha: 0.16),
+                                  foregroundColor: accentColor,
+                                  elevation: 0,
+                                  side: BorderSide(
+                                    color: accentColor.withValues(alpha: 0.35),
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 9),
+                                ),
+                                icon: const Icon(Icons.photo_library_outlined,
+                                    size: 14),
+                                label: Text(
+                                  screenOptions != null ? 'UI Screens (9)' : 'Photos',
+                                  style: GoogleFonts.spaceGrotesk(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                onPressed: () =>
+                                    _showScreensLightbox(context, _currentImage),
+                              ),
+                            ],
+                          ],
                         ),
                         if (github.isNotEmpty)
                           TextButton.icon(
                             style: TextButton.styleFrom(
                               foregroundColor: AppColors.textSecondary,
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 9),
+                                  horizontal: 10, vertical: 9),
                             ),
-                            icon: const FaIcon(FontAwesomeIcons.github, size: 14),
+                            icon: const FaIcon(FontAwesomeIcons.github,
+                                size: 14),
                             label: Text(
                               'Code',
                               style: GoogleFonts.inter(
@@ -656,5 +1125,367 @@ class _ProjectCardState extends State<_ProjectCard> {
         .animate()
         .fadeIn(delay: Duration(milliseconds: widget.delay))
         .slideY(begin: 0.2);
+  }
+}
+
+/// Fullscreen Interactive Lightbox for Project UI Reference and Screens
+class _ProjectScreensLightboxDialog extends StatefulWidget {
+  final String title;
+  final List<String> images;
+  final List<Map<String, dynamic>>? screenOptions;
+  final List<String>? featureOptions;
+  final int initialIndex;
+  final Color accentColor;
+
+  const _ProjectScreensLightboxDialog({
+    required this.title,
+    required this.images,
+    required this.screenOptions,
+    required this.featureOptions,
+    required this.initialIndex,
+    required this.accentColor,
+  });
+
+  @override
+  State<_ProjectScreensLightboxDialog> createState() =>
+      _ProjectScreensLightboxDialogState();
+}
+
+class _ProjectScreensLightboxDialogState
+    extends State<_ProjectScreensLightboxDialog> {
+  late int _currentIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialIndex.clamp(0, widget.images.length - 1);
+  }
+
+  void _next() {
+    if (_currentIndex < widget.images.length - 1) {
+      setState(() => _currentIndex++);
+    } else {
+      setState(() => _currentIndex = 0);
+    }
+  }
+
+  void _prev() {
+    if (_currentIndex > 0) {
+      setState(() => _currentIndex--);
+    } else {
+      setState(() => _currentIndex = widget.images.length - 1);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final w = MediaQuery.of(context).size.width;
+    final h = MediaQuery.of(context).size.height;
+    final isMobile = w < 760;
+
+    final currentOption =
+        widget.screenOptions != null && _currentIndex < widget.screenOptions!.length
+            ? widget.screenOptions![_currentIndex]
+            : null;
+    final currentName = currentOption?['name'] as String? ?? 'Screen ${_currentIndex + 1}';
+    final currentDesc = currentOption?['desc'] as String? ?? '';
+
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 12 : 36,
+        vertical: isMobile ? 16 : 28,
+      ),
+      child: Container(
+        width: 1100,
+        height: h * 0.9,
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: widget.accentColor.withValues(alpha: 0.4),
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.8),
+              blurRadius: 40,
+              offset: const Offset(0, 10),
+            ),
+            BoxShadow(
+              color: widget.accentColor.withValues(alpha: 0.15),
+              blurRadius: 30,
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            // Header Bar
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              decoration: const BoxDecoration(
+                color: AppColors.card,
+                borderRadius:
+                    BorderRadius.vertical(top: Radius.circular(24)),
+                border: Border(bottom: BorderSide(color: AppColors.border)),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(7),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: widget.accentColor.withValues(alpha: 0.15),
+                    ),
+                    child: Icon(Icons.devices_rounded,
+                        size: 18, color: widget.accentColor),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.title,
+                          style: GoogleFonts.spaceGrotesk(
+                            fontSize: isMobile ? 15 : 18,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        if (widget.featureOptions != null &&
+                            widget.featureOptions!.isNotEmpty &&
+                            !isMobile)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4.0),
+                            child: Wrap(
+                              spacing: 6,
+                              children: widget.featureOptions!.map((opt) {
+                                return Text(
+                                  '• $opt',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w500,
+                                    color: widget.accentColor,
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded,
+                        color: AppColors.textSecondary),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+            ),
+
+            // Horizontal Option Chips Bar
+            if (widget.screenOptions != null &&
+                widget.screenOptions!.isNotEmpty)
+              Container(
+                width: double.infinity,
+                color: AppColors.bg.withValues(alpha: 0.7),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  child: Row(
+                    children: widget.screenOptions!.asMap().entries.map((e) {
+                      final isSelected = _currentIndex == e.key;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: InkWell(
+                          onTap: () => setState(() => _currentIndex = e.key),
+                          borderRadius: BorderRadius.circular(16),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 180),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? widget.accentColor.withValues(alpha: 0.25)
+                                  : AppColors.card,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: isSelected
+                                    ? widget.accentColor
+                                    : AppColors.border,
+                                width: 1.2,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (isSelected) ...[
+                                  Icon(Icons.check_circle_rounded,
+                                      size: 13, color: widget.accentColor),
+                                  const SizedBox(width: 5),
+                                ],
+                                Text(
+                                  e.value['name'] as String,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    fontWeight: isSelected
+                                        ? FontWeight.w700
+                                        : FontWeight.w500,
+                                    color: isSelected
+                                        ? widget.accentColor
+                                        : AppColors.textSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+
+            // Main Interactive Zoom Viewport
+            Expanded(
+              child: Stack(
+                children: [
+                  Container(
+                    width: double.infinity,
+                    color: const Color(0xFF07090F),
+                    child: Center(
+                      child: InteractiveViewer(
+                        panEnabled: true,
+                        minScale: 0.8,
+                        maxScale: 4.0,
+                        child: Image.asset(
+                          widget.images[_currentIndex],
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) => const Center(
+                            child: Icon(Icons.broken_image,
+                                size: 50, color: AppColors.border),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // Previous Button
+                  Positioned(
+                    left: 14,
+                    top: 0,
+                    bottom: 0,
+                    child: Center(
+                      child: IconButton(
+                        style: IconButton.styleFrom(
+                          backgroundColor:
+                              AppColors.surface.withValues(alpha: 0.85),
+                          foregroundColor: widget.accentColor,
+                          padding: const EdgeInsets.all(12),
+                          side: BorderSide(
+                            color: widget.accentColor.withValues(alpha: 0.4),
+                          ),
+                        ),
+                        icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                            size: 18),
+                        onPressed: _prev,
+                      ),
+                    ),
+                  ),
+
+                  // Next Button
+                  Positioned(
+                    right: 14,
+                    top: 0,
+                    bottom: 0,
+                    child: Center(
+                      child: IconButton(
+                        style: IconButton.styleFrom(
+                          backgroundColor:
+                              AppColors.surface.withValues(alpha: 0.85),
+                          foregroundColor: widget.accentColor,
+                          padding: const EdgeInsets.all(12),
+                          side: BorderSide(
+                            color: widget.accentColor.withValues(alpha: 0.4),
+                          ),
+                        ),
+                        icon: const Icon(Icons.arrow_forward_ios_rounded,
+                            size: 18),
+                        onPressed: _next,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Bottom Description & Meta Bar
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              decoration: const BoxDecoration(
+                color: AppColors.card,
+                borderRadius:
+                    BorderRadius.vertical(bottom: Radius.circular(24)),
+                border: Border(top: BorderSide(color: AppColors.border)),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          currentName,
+                          style: GoogleFonts.spaceGrotesk(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: widget.accentColor,
+                          ),
+                        ),
+                        if (currentDesc.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2),
+                            child: Text(
+                              currentDesc,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: Text(
+                      '${_currentIndex + 1} / ${widget.images.length}',
+                      style: GoogleFonts.spaceGrotesk(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: widget.accentColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

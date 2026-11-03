@@ -29,21 +29,100 @@ class AppData {
 
   static const List<Map<String, dynamic>> projects = [
     {
-      'title': 'Resumo — ATS Resume & Job Matcher',
+      'title': 'Resumo — ATS Resume Analyzer (Flutter Web)',
       'category': 'Productivity & Utilities',
       'featured': true,
-      'badge': 'ATS & AI Matcher',
-      'accentColor': 0xFF06B6D4,
+      'badge': 'Complete UI Reference',
+      'accentColor': 0xFF38BDF8,
       'description':
-          'Intelligent ATS resume builder and live job-description analyzer platform. Features real-time keyword matching with scoring breakdown, interactive JD tailoring modal, dual visual rendering (Modern Glassmorphic vs. Classic Clean ATS), and dynamic vector PDF generation with one-click cross-platform export.',
+          'Production-grade ATS Resume Analyzer & Builder web application engineered with Flutter Web. Features intelligent resume parsing against job descriptions with an 88% match scoring engine, automated keyword extraction, real-time skills gap analysis, dynamic vector PDF generation, and an end-to-end multi-stage job tracker pipeline.',
       'highlights': [
-        'Real-Time JD Match Score Engine',
-        'Dynamic Multi-Page Vector PDF Generation',
-        'Dual Presentation: Modern & Classic ATS',
-        'Interactive Live Resume Editor & Tailor',
+        '88% ATS Match Rating & Multi-Category Breakdown',
+        'Interactive Resume Builder with PDF Export',
+        'Kanban & Table Job Application Pipeline Tracker',
+        'Deloitte, TCS, Accenture Company JDs Library',
+        'Glassmorphic SaaS UI with 9 Production Screens',
       ],
-      'tags': ['Flutter', 'PDF Engine', 'ATS Matcher', 'Web & Desktop', 'Clean Arch'],
-      'images': <String>[],
+      'tags': [
+        'Flutter Web',
+        'ATS Matcher',
+        'PDF Builder',
+        'Job Tracker',
+        'Clean Arch',
+        'Responsive UI'
+      ],
+      'images': [
+        'assets/resumo_overview.jpg',
+        'assets/resumo_dashboard.jpg',
+        'assets/resumo_ats_analyzer.jpg',
+        'assets/resumo_analysis_result.jpg',
+        'assets/resumo_resume_builder.jpg',
+        'assets/resumo_job_tracker.jpg',
+        'assets/resumo_company_jds.jpg',
+        'assets/resumo_saved_analyses.jpg',
+        'assets/resumo_settings.jpg',
+        'assets/resumo_upgrade.jpg',
+      ],
+      'featureOptions': [
+        'Modern UI',
+        'Responsive (Web)',
+        'ATS Analysis',
+        'Resume Builder',
+        'Job Tracker',
+        'Company JD',
+      ],
+      'screenOptions': [
+        {
+          'name': 'All Screens',
+          'image': 'assets/resumo_overview.jpg',
+          'desc': 'Complete UI Reference board displaying all 9 production Flutter Web screens.'
+        },
+        {
+          'name': '1. Dashboard',
+          'image': 'assets/resumo_dashboard.jpg',
+          'desc': 'Overview hub with greeting, quick CTA actions, 4 KPI counters, recent analyses, and ATS score trend chart.'
+        },
+        {
+          'name': '2. ATS Analyzer',
+          'image': 'assets/resumo_ats_analyzer.jpg',
+          'desc': 'Multi-step workflow: drag & drop resume file upload (PDF/DOCX), target company details, and job description input.'
+        },
+        {
+          'name': '3. Analysis Result',
+          'image': 'assets/resumo_analysis_result.jpg',
+          'desc': '88% ATS match radial gauge, 4-tier score breakdown, matched/missing skill chips, and actionable tailoring suggestions.'
+        },
+        {
+          'name': '4. Resume Builder',
+          'image': 'assets/resumo_resume_builder.jpg',
+          'desc': 'Multi-template ATS resume designer (Modern, Professional, Minimal, Creative) with live preview and PDF export.'
+        },
+        {
+          'name': '5. Job Tracker',
+          'image': 'assets/resumo_job_tracker.jpg',
+          'desc': 'Full lifecycle job management with status filters (Applied, Interview, Offer, Rejected) and ATS compatibility scores.'
+        },
+        {
+          'name': '6. Company JDs',
+          'image': 'assets/resumo_company_jds.jpg',
+          'desc': 'Enterprise job description repository with search, company tags (Deloitte, TCS, Accenture), and instant JD analysis.'
+        },
+        {
+          'name': '7. Saved Analyses',
+          'image': 'assets/resumo_saved_analyses.jpg',
+          'desc': 'Historical audit log of past resume evaluations with side-by-side score comparison tool.'
+        },
+        {
+          'name': '8. Settings',
+          'image': 'assets/resumo_settings.jpg',
+          'desc': 'Personal profile management, contact information, email/phone preferences, and security settings.'
+        },
+        {
+          'name': '9. Plans & Upgrade',
+          'image': 'assets/resumo_upgrade.jpg',
+          'desc': 'SaaS subscription tiers (Free ₹0, Pro ₹299/mo, Team ₹799/mo) with Monthly / Yearly 20% discount toggles.'
+        },
+      ],
       'github': 'https://github.com/iamsreeragsreedhar',
     },
     {
