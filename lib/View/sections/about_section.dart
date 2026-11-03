@@ -6,7 +6,8 @@ import 'package:portfoloio_1/core/theme.dart';
 import 'package:portfoloio_1/View/widgets/section_header.dart';
 
 class AboutSection extends StatelessWidget {
-  const AboutSection({super.key});
+  final VoidCallback? onDownloadCV;
+  const AboutSection({super.key, this.onDownloadCV});
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +66,7 @@ class AboutSection extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        _statItem('2+', 'Years Exp.'),
+        _statItem('3+', 'Years Exp.'),
         _statItem('15+', 'Apps & Modules'),
         _statItem('4+', 'Target Platforms'),
       ],
@@ -116,7 +117,45 @@ class AboutSection extends StatelessWidget {
         ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.2),
         const SizedBox(height: 32),
         _interestChips().animate().fadeIn(delay: 500.ms),
+        if (onDownloadCV != null) ...[
+          const SizedBox(height: 28),
+          _resumeButton().animate().fadeIn(delay: 600.ms),
+        ],
       ],
+    );
+  }
+
+  Widget _resumeButton() {
+    return InkWell(
+      onTap: onDownloadCV,
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        decoration: BoxDecoration(
+          color: AppColors.accent.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: AppColors.accent.withValues(alpha: 0.4),
+            width: 1.3,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.download_rounded, color: AppColors.accent, size: 18),
+            const SizedBox(width: 8),
+            Text(
+              'Download Resume (PDF)',
+              style: GoogleFonts.spaceGrotesk(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: AppColors.accent,
+                letterSpacing: 0.3,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

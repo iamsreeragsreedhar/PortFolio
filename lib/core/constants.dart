@@ -147,16 +147,9 @@ class AppData {
     {
       'role': 'Flutter Developer',
       'company': 'Exaware Solutions Private Limited',
-      'period': '2023 – Present',
+      'period': 'Nov 2022 – June 2026',
       'description':
-          'Engineering and maintaining production-grade cross-platform applications across Mobile, Web, Tablet, and Windows platforms. Developing enterprise warehouse solutions (StockFlow, PDA), inspection platforms (DocGen), resume intelligence platforms (Resumo), and operational dashboards. Architecting scalable codebases with Clean Architecture, BLoC/Cubit, GoRouter, RESTful APIs, Node.js, Oracle DB, Hive persistence, and PDF/Excel reporting.',
-    },
-    {
-      'role': 'Mobile App Developer (Intern)',
-      'company': 'Early Career',
-      'period': '2022 – 2023',
-      'description':
-          'Built and maintained cross-platform Flutter applications. Implemented modern state management (BLoC, Provider), integrated Firebase Authentication & Firestore, consumed RESTful web services, designed responsive UI screens, and collaborated on client application delivery.',
+          'Architected, developed, and deployed 4+ scalable, multi-platform applications using Flutter with Node.js backends, maintaining high reliability and sub-second API response times. Delivered responsive cross-platform mobile apps optimized for Android and iOS with smooth 60fps animations. Engineered automated CI/CD pipelines via GitHub Actions cutting release cycle time by 40%. Followed Clean Architecture and MVVM patterns, integrated Firebase suite, developed dynamic client-side PDF report generation, and configured declarative routing with GoRouter.',
     },
   ];
 

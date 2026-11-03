@@ -6,7 +6,8 @@ import 'package:portfoloio_1/core/theme.dart';
 import 'package:portfoloio_1/View/widgets/section_header.dart';
 
 class ExperienceSection extends StatelessWidget {
-  const ExperienceSection({super.key});
+  final VoidCallback? onDownloadCV;
+  const ExperienceSection({super.key, this.onDownloadCV});
 
   @override
   Widget build(BuildContext context) {
@@ -39,9 +40,185 @@ class ExperienceSection extends StatelessWidget {
                       isCurrent: e.key == 0,
                     ),
                   ),
+
+              if (onDownloadCV != null) ...[
+                const SizedBox(height: 36),
+                _ResumeExperienceCTA(onTap: onDownloadCV!),
+              ],
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _ResumeExperienceCTA extends StatefulWidget {
+  final VoidCallback onTap;
+  const _ResumeExperienceCTA({required this.onTap});
+
+  @override
+  State<_ResumeExperienceCTA> createState() => _ResumeExperienceCTAState();
+}
+
+class _ResumeExperienceCTAState extends State<_ResumeExperienceCTA> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final isNarrow = MediaQuery.of(context).size.width < 680;
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: EdgeInsets.all(isNarrow ? 18 : 24),
+        decoration: BoxDecoration(
+          color: AppColors.surface.withValues(alpha: 0.8),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: _hovered
+                ? AppColors.accent
+                : AppColors.accent.withValues(alpha: 0.25),
+            width: 1.4,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.accent.withValues(alpha: _hovered ? 0.25 : 0.08),
+              blurRadius: _hovered ? 24 : 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: isNarrow
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppColors.accent.withValues(alpha: 0.15),
+                        ),
+                        child: const Icon(
+                          Icons.description_outlined,
+                          color: AppColors.accent,
+                          size: 22,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Complete Credentials',
+                          style: GoogleFonts.spaceGrotesk(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Download the official PDF resume with full architecture breakdowns and technical stack.',
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      color: AppColors.textSecondary,
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton.icon(
+                    onPressed: widget.onTap,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.accent,
+                      foregroundColor: AppColors.bg,
+                      padding: const EdgeInsets.symmetric(vertical: 13),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    icon: const Icon(Icons.download_rounded, size: 18),
+                    label: Text(
+                      'Download Resume (PDF)',
+                      style: GoogleFonts.spaceGrotesk(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              )
+            : Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppColors.accent.withValues(alpha: 0.15),
+                    ),
+                    child: const Icon(
+                      Icons.description_outlined,
+                      color: AppColors.accent,
+                      size: 26,
+                    ),
+                  ),
+                  const SizedBox(width: 18),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Complete Professional Credentials',
+                          style: GoogleFonts.spaceGrotesk(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Download the official PDF resume with full architecture breakdowns, enterprise projects, and technical proficiencies.',
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            color: AppColors.textSecondary,
+                            height: 1.4,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  ElevatedButton.icon(
+                    onPressed: widget.onTap,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.accent,
+                      foregroundColor: AppColors.bg,
+                      elevation: _hovered ? 8 : 2,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 14,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    icon: const Icon(Icons.download_rounded, size: 18),
+                    label: Text(
+                      'Resume (PDF)',
+                      style: GoogleFonts.spaceGrotesk(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.4,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
       ),
     );
   }
